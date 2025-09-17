@@ -18,6 +18,8 @@ from evalplus.data import (
 )
 from evalplus.syncheck import syntax_check
 
+FENCED_CODE_RE = re.compile(r"```(?:python|py)?\s*\n(.*?)```", re.IGNORECASE | re.DOTALL)
+
 CLASS_TYPE = "class_definition"
 FUNCTION_TYPE = "function_definition"
 IMPORT_TYPE = ["import_statement", "import_from_statement"]
@@ -171,9 +173,17 @@ def extract_target_code_or_empty(code: str, entrypoint: Optional[str] = None) ->
 
 
 def sanitize(code: str, entrypoint: Optional[str] = None) -> str:
-    sanitized_code = extract_target_code_or_empty(code, entrypoint).strip()
+    last_match = None
+    for match in FENCED_CODE_RE.finditer(code):
+        last_match = match
+
+    code_to_process = code
+    if last_match is not None:
+        code_to_process = last_match.group(1).strip()
+
+    sanitized_code = extract_target_code_or_empty(code_to_process, entrypoint).strip()
     if not sanitized_code:
-        return code_extract(code)
+        return code_extract(code_to_process)
     return sanitized_code
 
 
