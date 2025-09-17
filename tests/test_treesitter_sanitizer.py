@@ -68,6 +68,23 @@ def g(x):
     )
 
 
+def test_sanitize_prefers_last_fence():
+    icode = r"""This is the first attempt:
+```python
+def solution():
+    return 1
+```
+
+And here is the retry:
+```python
+def solution():
+    return 2
+```
+"""
+
+    assert sanitize(icode) == "def solution():\n    return 2"
+
+
 def test_sanitize_class():
     icode = r"""Following is the code snippet:
 ```python
